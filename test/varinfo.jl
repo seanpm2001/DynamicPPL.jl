@@ -355,4 +355,26 @@
             end
         end
     end
+
+    @testset "condition on varinfo" begin
+        @testset "$(nameof(model))" for model in DynamicPPL.TestUtils.DEMO_MODELS
+            example_values = rand(NamedTuple, model)
+            vns = DynamicPPL.TestUtils.varnames(model)
+
+            # Set up the different instances of `AbstractVarInfo` with the desired values.
+            varinfos = setup_varinfos(model, example_values, vns)
+            @testset "$(short_varinfo_name(vi))" for vi in varinfos
+                @testset "AbstractDict" begin
+                    # Condition `model` on values from `vi`.
+                    cmodel = model | values_as(vi, Dict)
+                    # Run it and capture the returned values, which should contain the realizations.
+                    retval = cmodel()
+                    # Check that the realizations are the same as the conditioning values.
+                    for vn in vns
+                        @test get(retval, vn) == get(example_values, vn)
+                    end
+                end
+            end
+        end
+    end
 end
