@@ -325,12 +325,18 @@ function context_getvalue(context::ConditionContext, vns::AbstractArray{<:VarNam
 end
 
 context_getvalue(context::ConditionContext, vn::VarName, _) = context_getvalue(context, vn)
-function context_getvalue(context::ConditionContext, vns::AbstractArray{<:VarName}, dist::AbstractArray{<:Distribution})
+function context_getvalue(
+    context::ConditionContext,
+    vns::AbstractArray{<:VarName},
+    dist::AbstractArray{<:Distribution},
+)
     # TODO: We repeat this pattern quite often. Can we unify?
     @assert size(vns) == size(dist)
-    return context_getvalue.((context, ), vns)
+    return context_getvalue.((context,), vns)
 end
-function context_getvalue(context::ConditionContext, vns::AbstractArray{<:VarName}, dist::Distribution)
+function context_getvalue(
+    context::ConditionContext, vns::AbstractArray{<:VarName}, dist::Distribution
+)
     # TODO: We repeat this pattern quite often. Can we unify?
     vals = mapreduce(Base.Fix1(context_getvalue, context), vcat, vns)
     return reconstruct(dist, vals, length(vns))
