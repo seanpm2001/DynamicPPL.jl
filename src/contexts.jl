@@ -298,82 +298,85 @@ childcontext(context::ConditionContext) = context.context
 setchildcontext(parent::ConditionContext, child) = ConditionContext(parent.values, child)
 
 """
-    hasvalue(context, vn)
+    context_hasvalue(context, vn)
 
 Return `true` if `vn` is found in `context`.
 """
-hasvalue(context, vn) = false
-hasvalue(context::ConditionContext, vn::VarName) = nested_haskey(context.values, vn)
-function hasvalue(context::ConditionContext, vns::AbstractArray{<:VarName})
+context_hasvalue(context, vn) = false
+context_hasvalue(context::ConditionContext, vn::VarName) = nested_haskey(context.values, vn)
+function context_hasvalue(context::ConditionContext, vns::AbstractArray{<:VarName})
     return all(Base.Fix1(nested_haskey, context.values), vns)
 end
 
 """
-    getvalue(context, vn[, dist])
+    context_getvalue(context, vn[, dist])
 
 Return value of `vn` in `context`.
 
 If `dist` is provided and `vn` is an array of varnames, an attempt at [`reconstruct`](@ref) will be made.
 """
-function getvalue(context::AbstractContext, vn, args...)
+function context_getvalue(context::AbstractContext, vn, args...)
     return error("context $(context) does not contain value for $vn")
 end
-getvalue(context::NamedConditionContext, vn) = get(context.values, vn)
-getvalue(context::ConditionContext, vn) = nested_getindex(context.values, vn)
-function getvalue(context::ConditionContext, vns::AbstractArray{<:VarName})
-    return map(Base.Fix1(getvalue, context), vns)
+context_getvalue(context::NamedConditionContext, vn) = get(context.values, vn)
+context_getvalue(context::ConditionContext, vn) = nested_getindex(context.values, vn)
+function context_getvalue(context::ConditionContext, vns::AbstractArray{<:VarName})
+    return map(Base.Fix1(context_getvalue, context), vns)
 end
 
-getvalue(context::ConditionContext, vn::VarName, _) = getvalue(context, vn)
-function getvalue(context::ConditionContext, vns::AbstractArray{<:VarName}, dist)
+context_getvalue(context::ConditionContext, vn::VarName, _) = context_getvalue(context, vn)
+function context_getvalue(context::ConditionContext, vns::AbstractArray{<:VarName}, dist)
     # TODO: We repeat this pattern quite often. Can we unify?
-    vals = mapreduce(Base.Fix1(getvalue, context), vcat, vns)
+    vals = mapreduce(Base.Fix1(context_getvalue, context), vcat, vns)
     return reconstruct(dist, vals, length(vns))
 end
 
 """
-    hasvalue_nested(context, vn[, dist])
+    context_hasvalue_nested(context, vn[, dist])
 
 Return `true` if `vn` is found in `context` or any of its descendants.
 
-This is contrast to [`hasvalue`](@ref) which only checks for `vn` in `context`,
+This is contrast to [`context_hasvalue`](@ref) which only checks for `vn` in `context`,
 not recursively checking if `vn` is in any of its descendants.
 
 If `dist` is provided and `vn` is an array of varnames, an attempt at [`reconstruct`](@ref) will be made.
 """
-function hasvalue_nested(context::AbstractContext, vn)
-    return hasvalue_nested(NodeTrait(hasvalue_nested, context), context, vn)
+function context_hasvalue_nested(context::AbstractContext, vn)
+    return context_hasvalue_nested(NodeTrait(context_hasvalue_nested, context), context, vn)
 end
-hasvalue_nested(::IsLeaf, context, vn) = hasvalue(context, vn)
-function hasvalue_nested(::IsParent, context, vn)
-    return hasvalue(context, vn) || hasvalue_nested(childcontext(context), vn)
+context_hasvalue_nested(::IsLeaf, context, vn) = context_hasvalue(context, vn)
+function context_hasvalue_nested(::IsParent, context, vn)
+    return context_hasvalue(context, vn) ||
+           context_hasvalue_nested(childcontext(context), vn)
 end
-function hasvalue_nested(context::PrefixContext, vn)
-    return hasvalue_nested(childcontext(context), prefix(context, vn))
+function context_hasvalue_nested(context::PrefixContext, vn)
+    return context_hasvalue_nested(childcontext(context), prefix(context, vn))
 end
 
 """
-    getvalue_nested(context, vn)
+    context_getvalue_nested(context, vn)
 
 Return the value of the parameter corresponding to `vn` from `context` or its descendants.
 
-This is contrast to [`getvalue`](@ref) which only returns the value `vn` in `context`,
+This is contrast to [`context_getvalue`](@ref) which only returns the value `vn` in `context`,
 not recursively looking into its descendants.
 """
-function getvalue_nested(context::AbstractContext, vn, args...)
-    return getvalue_nested(NodeTrait(getvalue_nested, context), context, vn, args...)
+function context_getvalue_nested(context::AbstractContext, vn, args...)
+    return context_getvalue_nested(
+        NodeTrait(context_getvalue_nested, context), context, vn, args...
+    )
 end
-function getvalue_nested(::IsLeaf, context, vn, args...)
+function context_getvalue_nested(::IsLeaf, context, vn, args...)
     return error("context $(context) does not contain value for $vn")
 end
-function getvalue_nested(context::PrefixContext, vn, args...)
-    return getvalue_nested(childcontext(context), prefix(context, vn), args...)
+function context_getvalue_nested(context::PrefixContext, vn, args...)
+    return context_getvalue_nested(childcontext(context), prefix(context, vn), args...)
 end
-function getvalue_nested(::IsParent, context, vn, args...)
-    return if hasvalue(context, vn)
-        getvalue(context, vn, args...)
+function context_getvalue_nested(::IsParent, context, vn, args...)
+    return if context_hasvalue(context, vn)
+        context_getvalue(context, vn, args...)
     else
-        getvalue_nested(childcontext(context), vn, args...)
+        context_getvalue_nested(childcontext(context), vn, args...)
     end
 end
 

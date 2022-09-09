@@ -66,8 +66,8 @@ function contextual_isassumption(context::AbstractContext, vn)
     return contextual_isassumption(NodeTrait(context), context, vn)
 end
 function contextual_isassumption(context::ConditionContext, vn)
-    if hasvalue(context, vn)
-        val = getvalue(context, vn)
+    if context_hasvalue(context, vn)
+        val = context_getvalue(context, vn)
         # TODO: Do we even need the `>: Missing`, i.e. does it even help the compiler?
         if eltype(val) >: Missing && val === missing
             return true
@@ -399,7 +399,7 @@ function generate_tilde(left, right)
         else
             # If `vn` is not in `argnames`, we need to make sure that the variable is defined.
             if !$(DynamicPPL.inargnames)($vn, __model__)
-                $left = $(DynamicPPL.getvalue_nested)(__context__, $vn, $dist)
+                $left = $(DynamicPPL.context_getvalue_nested)(__context__, $vn, $dist)
             end
 
             $value, __varinfo__ = $(DynamicPPL.tilde_observe!!)(
@@ -458,7 +458,7 @@ function generate_dot_tilde(left, right)
         else
             # If `vn` is not in `argnames`, we need to make sure that the variable is defined.
             if !$(DynamicPPL.inargnames)($vn, __model__)
-                $left .= $(DynamicPPL.getvalue_nested)(__context__, $vn, $right_tmp)
+                $left .= $(DynamicPPL.context_getvalue_nested)(__context__, $vn, $right_tmp)
             end
 
             $value, __varinfo__ = $(DynamicPPL.dot_tilde_observe!!)(
