@@ -356,7 +356,10 @@
         end
     end
 
-    @testset "condition on varinfo" begin
+    # By testing the conditioning on values obtained from varinfos on demo model,
+    # we'll test several different combinations that should all be valid.
+    # This is also an essential part for Gibbs sampling.
+    @testset "condition on values from varinfo" begin
         @testset "$(nameof(model))" for model in DynamicPPL.TestUtils.DEMO_MODELS
             example_values = rand(NamedTuple, model)
             vns = DynamicPPL.TestUtils.varnames(model)
