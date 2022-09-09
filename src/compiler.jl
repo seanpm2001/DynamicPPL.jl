@@ -150,6 +150,7 @@ x[1][3]
 """
 unwrap_right_left_vns(right, left, vns) = right, left, vns
 function unwrap_right_left_vns(right::NamedDist, left, vns)
+    # TODO: Try to instead merge `right.name` and `vns`?
     return unwrap_right_left_vns(right.dist, left, right.name)
 end
 function unwrap_right_left_vns(
@@ -398,7 +399,7 @@ function generate_tilde(left, right)
         else
             # If `vn` is not in `argnames`, we need to make sure that the variable is defined.
             if !$(DynamicPPL.inargnames)($vn, __model__)
-                $left = $(DynamicPPL.getvalue_nested)(__context__, $vn)
+                $left = $(DynamicPPL.getvalue_nested)(__context__, $vn, $dist)
             end
 
             $value, __varinfo__ = $(DynamicPPL.tilde_observe!!)(
@@ -446,10 +447,10 @@ function generate_dot_tilde(left, right)
 
     # Otherwise it is determined by the model or its value,
     # if the LHS represents an observation
-    @gensym vn isassumption value
+    @gensym vn isassumption value right_tmp left_tmp
     return quote
-        $vn = $(DynamicPPL.resolve_varnames)(
-            $(AbstractPPL.drop_escape(varname(left))), $right
+        $right_tmp, $left_tmp, $vn = $(DynamicPPL.unwrap_right_left_vns)(
+            $right, $(maybe_view(left)), $(AbstractPPL.drop_escape(varname(left)))
         )
         $isassumption = $(DynamicPPL.isassumption(left, vn))
         if $isassumption
@@ -457,13 +458,13 @@ function generate_dot_tilde(left, right)
         else
             # If `vn` is not in `argnames`, we need to make sure that the variable is defined.
             if !$(DynamicPPL.inargnames)($vn, __model__)
-                $left .= $(DynamicPPL.getvalue_nested)(__context__, $vn)
+                $left .= $(DynamicPPL.getvalue_nested)(__context__, $vn, $right_tmp)
             end
 
             $value, __varinfo__ = $(DynamicPPL.dot_tilde_observe!!)(
                 __context__,
                 $(DynamicPPL.check_tilde_rhs)($right),
-                $(maybe_view(left)),
+                $left_tmp,
                 $vn,
                 __varinfo__,
             )
@@ -479,11 +480,7 @@ function generate_dot_tilde_assume(left, right, vn)
     @gensym value
     return quote
         $value, __varinfo__ = $(DynamicPPL.dot_tilde_assume!!)(
-            __context__,
-            $(DynamicPPL.unwrap_right_left_vns)(
-                $(DynamicPPL.check_tilde_rhs)($right), $(maybe_view(left)), $vn
-            )...,
-            __varinfo__,
+            __context__, $right, $left, $vn, __varinfo__
         )
         $left .= $value
         $value
