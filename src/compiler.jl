@@ -454,7 +454,7 @@ function generate_dot_tilde(left, right)
         )
         $isassumption = $(DynamicPPL.isassumption(left, vn))
         if $isassumption
-            $(generate_dot_tilde_assume(left, right, vn))
+            $(generate_dot_tilde_assume(left, right_tmp, vn))
         else
             # If `vn` is not in `argnames`, we need to make sure that the variable is defined.
             if !$(DynamicPPL.inargnames)($vn, __model__)
