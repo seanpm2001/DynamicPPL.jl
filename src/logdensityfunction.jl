@@ -137,6 +137,33 @@ Return the parameters of the wrapped varinfo as a vector.
 """
 getparams(f::LogDensityFunction) = f.varinfo[_get_indexer(f.context)]
 
+"""
+    getparams_constrained(f::LogDensityFunction)
+
+Return the constrained parameters of the wrapped varinfo as a vector.
+"""
+function getparams_constrained(f::LogDensityFunction)
+    # If the varinfo is already unconstrained, we can just return it.
+    !istrans(f.varinfo) && return getparams(f)
+
+    f_constrained = invlink(f)
+    return getparams(f_constrained)
+end
+
+
+"""
+    getparams_unconstrained(f::LogDensityFunction)
+
+Return the unconstrained parameters of the wrapped varinfo as a vector.
+"""
+function getparams_unconstrained(f::LogDensityFunction)
+    # If the varinfo is already unconstrained, we can just return it.
+    istrans(f.varinfo) && return getparams(f)
+
+    f_constrained = link(f)
+    return getparams(f_constrained)
+end
+
 # LogDensityProblems interface
 function LogDensityProblems.logdensity(f::LogDensityFunction, θ::AbstractVector)
     vi_new = unflatten(f.varinfo, f.context, θ)
