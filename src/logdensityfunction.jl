@@ -150,6 +150,34 @@ function getparams_constrained(f::LogDensityFunction)
     return getparams(f_constrained)
 end
 
+"""
+    params_to_constrained(f::LogDensityFunction, params_unconstrained::AbstractVector)
+
+Transform `params_unconstrained` to constrained space using `f`.
+"""
+function params_to_constrained(f::LogDensityFunction, params_unconstrained::AbstractVector)
+    # If it's not already linked, we link first to bring it to same space as `params_unconstrained`.
+    f_linked = !istrans(f.varinfo) ? DynamicPPL.link(f) : f
+    # Replace the varinfo with one containing `params_unconstrained`.
+    Setfield.@set! f_linked.varinfo = DynamicPPL.unflatten(f_linked.varinfo, f_linked.context, params_unconstrained)
+    # Finally, we invlink to get the constrained params.
+    return getparams(invlink!!(f_linked))
+end
+
+"""
+    params_to_unconstrained(f::LogDensityFunction, params_constrained::AbstractVector)
+
+Transform `params_constrained` to unconstrained space using `f`.
+"""
+function params_to_unconstrained(f::LogDensityFunction, params_constrained::AbstractVector)
+    # If it's not already invlinked, we invlink first to bring it to same space as `params_constrained`.
+    f_invlinked = istrans(f.varinfo) ? DynamicPPL.invlink(f) : f
+    # Replace the varinfo with one containing `params_constrained`.
+    Setfield.@set! f_invlinked.varinfo = DynamicPPL.unflatten(f_invlinked.varinfo, f_invlinked.context, params_constrained)
+    # Finally, we link to get the unconstrained params.
+    return getparams(link!!(f_invlinked))
+end
+
 
 """
     getparams_unconstrained(f::LogDensityFunction)
