@@ -96,6 +96,30 @@ function invlink!!(t::AbstractTransformation, f::LogDensityFunction)
     return Setfield.@set f.varinfo = invlink!!(t, f.varinfo, f.model)
 end
 
+"""
+    link([t::AbstractTransformation, ]f::LogDensityFunction)
+
+Return a transformed `f` using the transformation `t`.
+
+If `t` is not provided, `default_transformation(f.model, f.varinfo)` will be used.
+"""
+link(f::LogDensityFunction) = link(default_transformation(f.model, f.varinfo), f)
+function link(t::AbstractTransformation, f::LogDensityFunction)
+    return Setfield.@set f.varinfo = link(t, f.varinfo, f.model)
+end
+
+"""
+    link([t::AbstractTransformation, ]f::LogDensityFunction)
+
+Return a transformed `f` using the transformation `t`.
+
+If `t` is not provided, `default_transformation(f.model, f.varinfo)` will be used.
+"""
+invlink(f::LogDensityFunction) = invlink(default_transformation(f.model, f.varinfo), f)
+function invlink(t::AbstractTransformation, f::LogDensityFunction)
+    return Setfield.@set f.varinfo = invlink(t, f.varinfo, f.model)
+end
+
 # HACK: heavy usage of `AbstractSampler` for, well, _everything_, is being phased out. In the mean time
 # we need to define these annoying methods to ensure that we stay compatible with everything.
 getsampler(f::LogDensityFunction) = getsampler(f.context)
