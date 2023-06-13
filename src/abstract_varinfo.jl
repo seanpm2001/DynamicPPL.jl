@@ -435,6 +435,55 @@ function invlink!!(
 end
 
 """
+    link(vi::AbstractVarInfo, model::Model)
+    link(vi::AbstractVarInfo, spl::AbstractSampler, model::Model)
+
+Transforms the variables in `vi` to their linked space, using the transformation `t`.
+
+
+If `t` is not provided, `default_transformation(model, vi)` will be used.
+
+See also: [`default_transformation`](@ref), [`link!!`](@ref).
+"""
+link(vi::AbstractVarInfo, model::Model) = link(vi, SampleFromPrior(), model)
+function link(t::AbstractTransformation, vi::AbstractVarInfo, model::Model)
+    return link(t, vi, SampleFromPrior(), model)
+end
+function link(vi::AbstractVarInfo, spl::AbstractSampler, model::Model)
+    # Use `default_transformation` to decide which transformation to use if none is specified.
+    return link(default_transformation(model, vi), vi, spl, model)
+end
+function link(t::AbstractTransformation, vi::AbstractVarInfo, spl::AbstractSampler, model::Model)
+    # TODO: Implement specialized versions which only copy necessary bits rather than everything.
+    return link!!(t, deepcopy(vi), spl, model)
+end
+
+"""
+    invlink(vi::AbstractVarInfo, model::Model)
+    invlink(vi::AbstractVarInfo, spl::AbstractSampler, model::Model)
+
+Transforms the variables in `vi` to their invlinked space, using the transformation `t`.
+
+
+If `t` is not provided, `default_transformation(model, vi)` will be used.
+
+See also: [`default_transformation`](@ref), [`invlink!!`](@ref).
+"""
+invlink(vi::AbstractVarInfo, model::Model) = invlink(vi, SampleFromPrior(), model)
+function invlink(t::AbstractTransformation, vi::AbstractVarInfo, model::Model)
+    return invlink(t, vi, SampleFromPrior(), model)
+end
+function invlink(vi::AbstractVarInfo, spl::AbstractSampler, model::Model)
+    # Use `default_transformation` to decide which transformation to use if none is specified.
+    return invlink(default_transformation(model, vi), vi, spl, model)
+end
+function invlink(t::AbstractTransformation, vi::AbstractVarInfo, spl::AbstractSampler, model::Model)
+    # TODO: Implement specialized versions which only copy necessary bits rather than everything.
+    return invlink!!(t, deepcopy(vi), spl, model)
+end
+
+
+"""
     maybe_invlink_before_eval!!([t::Transformation,] vi, context, model)
 
 Return a possibly invlinked version of `vi`.
