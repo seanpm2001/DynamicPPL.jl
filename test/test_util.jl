@@ -87,6 +87,7 @@ short_varinfo_name(::TypedVarInfo) = "TypedVarInfo"
 short_varinfo_name(::UntypedVarInfo) = "UntypedVarInfo"
 short_varinfo_name(::SimpleVarInfo{<:NamedTuple}) = "SimpleVarInfo{<:NamedTuple}"
 short_varinfo_name(::SimpleVarInfo{<:OrderedDict}) = "SimpleVarInfo{<:OrderedDict}"
+short_varinfo_name(::SimpleVarInfo{<:VarNameDict}) = "SimpleVarInfo{<:VarNameDict}"
 
 # convenient functions for testing model.jl
 # function to modify the representation of values based on their length

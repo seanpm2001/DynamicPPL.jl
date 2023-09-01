@@ -55,9 +55,17 @@ function setup_varinfos(model::Model, example_values::NamedTuple, varnames)
     svi_typed_ref = SimpleVarInfo(example_values, Ref(getlogp(svi_typed)))
     svi_untyped_ref = SimpleVarInfo(OrderedDict(), Ref(getlogp(svi_untyped)))
 
+    svi_vardict = SimpleVarInfo(VarNameDict())
+
     lp = getlogp(vi_typed)
     return map((
-        vi_untyped, vi_typed, svi_typed, svi_untyped, svi_typed_ref, svi_untyped_ref
+        vi_untyped,
+        vi_typed,
+        svi_typed,
+        svi_untyped,
+        svi_typed_ref,
+        svi_untyped_ref,
+        svi_vardict,
     )) do vi
         # Set them all to the same values.
         DynamicPPL.setlogp!!(update_values!!(vi, example_values, varnames), lp)
