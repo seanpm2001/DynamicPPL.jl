@@ -13,7 +13,7 @@ end
 
 VarNameDict(iter) = VarNameDict(OrderedDict(iter))
 function VarNameDict(dict::OrderedDict=OrderedDict{VarName,Any}())
-    isempty(dict) && return VarNameDict(float(Int)[],OrderedDict{VarName,UnitRange{Int}}())
+    isempty(dict) && return VarNameDict(float(Int)[], OrderedDict{VarName,UnitRange{Int}}())
 
     offset = 0
     ranges = map(values(dict)) do x
@@ -36,7 +36,7 @@ Base.setindex!(vnd::VarNameDict, val, i) = setindex!(vnd.values, val, i)
 
 function nextrange(vnd::VarNameDict, x)
     n = length(vnd)
-    return n + 1:n + length(x)
+    return (n + 1):(n + length(x))
 end
 
 function Base.getindex(vnd::VarNameDict, vn::VarName)
@@ -64,9 +64,10 @@ function Base.setindex!(vnd::VarNameDict, val, vn::VarName)
             vnd.varname_to_ranges[vn] = r_new
             # Resize the underlying vector to accommodate the new values.
             resize!(vnd.values, r_new[end])
-        else n_val < n_r
+        else
+            n_val < n_r
             # Just decrease the current range.
-            vnd.varname_to_ranges[vn] = r[1]:r[1] + n_val - 1
+            vnd.varname_to_ranges[vn] = r[1]:(r[1] + n_val - 1)
         end
 
         # TODO: Keep track of unused ranges so we can perform sweeps
@@ -83,7 +84,11 @@ function BangBang.setindex!!(vnd::VarNameDict, val, vn::VarName)
 end
 
 function Base.iterate(vnd::VarNameDict, state=nothing)
-    res = state === nothing ? iterate(vnd.varname_to_ranges) : iterate(vnd.varname_to_ranges, state)
+    res = if state === nothing
+        iterate(vnd.varname_to_ranges)
+    else
+        iterate(vnd.varname_to_ranges, state)
+    end
     res === nothing && return nothing
     (vn, range), state_new = res
     return vn => vnd.values[range], state_new
