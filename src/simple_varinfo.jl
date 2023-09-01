@@ -354,9 +354,7 @@ function BangBang.setindex!!(vi::SimpleVarInfo, vals, vns::AbstractVector{<:VarN
     return vi
 end
 
-function BangBang.setindex!!(vi::SimpleVarInfo{<:AbstractDict}, val, vn::VarName)
-    # For dictlike objects, we treat the entire `vn` as a _key_ to set.
-    dict = values_as(vi)
+function nested_setindex!!(dict::AbstractDict, val, vn::VarName)
     # Attempt to split into `parent` and `child` lenses.
     parent, child, issuccess = splitlens(getlens(vn)) do lens
         l = lens === nothing ? Setfield.IdentityLens() : lens
@@ -373,7 +371,17 @@ function BangBang.setindex!!(vi::SimpleVarInfo{<:AbstractDict}, val, vn::VarName
         vn_key = VarName(vn, keylens)
         BangBang.setindex!!(dict, set!!(dict[vn_key], child, val), vn_key)
     end
-    return Setfield.@set vi.values = dict_new
+
+    return dict_new
+end
+
+function BangBang.setindex!!(vi::SimpleVarInfo{<:AbstractDict}, val, vn::VarName)
+    return Setfield.@set vi.values = nested_setindex!!(vi.values, val, vn)
+end
+
+function BangBang.setindex!!(vi::SimpleVarInfo{<:VarNameDict}, val, vn::VarName)
+    val_vec = vectorize(val)
+    return Setfield.@set vi.values = nested_setindex!!(vi.values, val_vec, vn)
 end
 
 # `NamedTuple`
@@ -405,6 +413,19 @@ function BangBang.push!!(
     gidset::Set{Selector},
 )
     vi.values[vn] = r
+    return vi
+end
+
+# `VarNameVector`
+function BangBang.push!!(
+    vi::SimpleVarInfo{<:VarNameDict},
+    vn::VarName{sym},
+    value,
+    dist::Distribution,
+    gidset::Set{Selector},
+) where {sym}
+    value_vectorized = vectorize(dist, value)
+    vi.values[vn] = value_vectorized
     return vi
 end
 

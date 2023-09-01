@@ -743,9 +743,8 @@ Return value corresponding to `vn` in `values` by also looking
 in the the actual values of the dict.
 """
 function nested_getindex(values::AbstractDict, vn::VarName)
-    maybeval = get(values, vn, nothing)
-    if maybeval !== nothing
-        return maybeval
+    if haskey(values, vn)
+        return values[vn]
     end
 
     # Split the lens into the key / `parent` and the extraction lens / `child`.
