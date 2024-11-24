@@ -866,7 +866,11 @@ number of `sampler`.
 """
 function (model::Model)(args...; kwargs...)
     # Catch instances of old usage
-    length(args) > 0 && error("model cannot be called with positional arguments")
+    if length(args) > 0
+        length(kwargs) > 0 && error("cannot call model with both positional and keyword arguments")
+        @warn "Calling a DynamicPPL.Model with positional arguments is deprecated. Use `model(; rng=rng, varinfo=varinfo, sampler=sampler, context=context)` instead."
+        return first(evaluate!!(model, args...))
+    end
     # TODO: This is so ugly
     if (length(kwargs) == 2 && haskey(kwargs, :varinfo) && haskey(kwargs, :context)) || (length(kwargs) == 1 && haskey(kwargs, :context))
         wrap = false
