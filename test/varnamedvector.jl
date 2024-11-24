@@ -604,7 +604,7 @@ end
 
             # Is evaluation correct?
             varinfo_eval = last(
-                DynamicPPL.new_evaluate!!(model; varinfo=deepcopy(varinfo))
+                DynamicPPL.new_evaluate!!(model; varinfo=deepcopy(varinfo), context=DefaultContext())
             )
             # Log density should be the same.
             @test getlogp(varinfo_eval) ≈ logp_true

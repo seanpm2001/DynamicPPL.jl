@@ -864,7 +864,17 @@ Sample from the `model` using the `sampler` with random number generator `rng` a
 The method resets the log joint probability of `varinfo` and increases the evaluation
 number of `sampler`.
 """
-(model::Model)(kwargs...) = first(new_evaluate!!(model; kwargs...))
+function (model::Model)(args...; kwargs...)
+    # Catch instances of old usage
+    length(args) > 0 && error("model cannot be called with positional arguments")
+    # TODO: This is so ugly
+    if (length(kwargs) == 2 && haskey(kwargs, :varinfo) && haskey(kwargs, :context)) || (length(kwargs) == 1 && haskey(kwargs, :context))
+        wrap = false
+    else
+        wrap = true
+    end
+    first(new_evaluate!!(model; wrap=wrap, kwargs...))
+end
 
 """
     use_threadsafe_eval(context::AbstractContext, varinfo::AbstractVarInfo)
@@ -893,9 +903,15 @@ function new_evaluate!!(
     varinfo::AbstractVarInfo=VarInfo(),
     sampler::AbstractSampler=SampleFromPrior(),
     context::AbstractContext=DefaultContext(),
+    wrap::Bool=false,
 )
     # Wrap context in SamplingContext if needed
-    if !(context isa SamplingContext)
+    # TODO: Remove wrap() keyword argument. This was added because
+    # the old evaluate!! function had very weird behaviour, where
+    # only the two methods evaluate!!(model, varinfo, context) and
+    # evaluate!!(model, context) would NOT wrap the context. Any
+    # other invocation of evaluate!! would wrap it.
+    if wrap && !(context isa SamplingContext)
         context = SamplingContext(rng, sampler, context)
     end
     # Dispatch depending on whether we need threadsafe evaluation
@@ -1025,6 +1041,7 @@ function Base.rand(rng::Random.AbstractRNG, ::Type{T}, model::Model) where {T}
             rng=rng,
             varinfo=SimpleVarInfo{Float64}(OrderedDict()),
             context=model.context,
+            wrap=true,
         ),
     )
     return values_as(x, T)

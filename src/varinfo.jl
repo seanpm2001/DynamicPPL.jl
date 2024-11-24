@@ -176,7 +176,7 @@ function untyped_varinfo(
     metadata::Union{Metadata,VarNamedVector}=Metadata(),
 )
     varinfo = VarInfo(metadata)
-    return last(new_evaluate!!(model, rng=rng, varinfo=varinfo, sampler=sampler, context=context))
+    return last(new_evaluate!!(model; rng=rng, varinfo=varinfo, sampler=sampler, context=context, wrap=true))
 end
 function untyped_varinfo(
     model::Model, args::Union{AbstractSampler,AbstractContext,Metadata,VarNamedVector}...
@@ -2233,7 +2233,7 @@ julia> var_info[@varname(m)] # [✓] changed
 julia> var_info[@varname(x[1])] # [✓] unchanged
 -0.22312984965118443
 
-julia> m(rng, var_info); # sample `x[1]` conditioned on `m = 100.0`
+julia> m(; rng=rng, varinfo=var_info); # sample `x[1]` conditioned on `m = 100.0`
 
 julia> var_info[@varname(m)] # [✓] unchanged
 100.0

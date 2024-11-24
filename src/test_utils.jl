@@ -856,7 +856,7 @@ function posterior_optima(model::MatrixvariateAssumeDemoModels)
 end
 function rand_prior_true(rng::Random.AbstractRNG, model::MatrixvariateAssumeDemoModels)
     # Get template values from `model`.
-    retval = model(rng)
+    retval = model(; rng=rng)
     vals = (s=retval.s, m=retval.m)
     # Fill containers with realizations from prior.
     for i in LinearIndices(vals.s)

@@ -36,10 +36,13 @@ julia> m = demo();
 
 julia> rng = StableRNG(42);
 
+julia> ### Sampling ###
+       ctx = SamplingContext(rng, SampleFromPrior(), DefaultContext());
+
 julia> # In the `NamedTuple` version we need to provide the place-holder values for
        # the variables which are using "containers", e.g. `Array`.
        # In this case, this means that we need to specify `x` but not `m`.
-       _, vi = DynamicPPL.new_evaluate!!(m; varinfo=SimpleVarInfo((x = ones(2), )));
+       _, vi = DynamicPPL.new_evaluate!!(m; varinfo=SimpleVarInfo((x = ones(2), )), context=ctx);
 
 julia> # (✓) Vroom, vroom! FAST!!!
        vi[@varname(x[1])]
@@ -57,12 +60,12 @@ julia> vi[@varname(x[1:2])]
  1.3736306979834252
 
 julia> # (×) If we don't provide the container...
-       _, vi = DynamicPPL.new_evaluate!!(m; varinfo=SimpleVarInfo()); vi
+       _, vi = DynamicPPL.new_evaluate!!(m; varinfo=SimpleVarInfo(), context=ctx); vi
 ERROR: type NamedTuple has no field x
 [...]
 
 julia> # If one does not know the varnames, we can use a `OrderedDict` instead.
-       _, vi = DynamicPPL.new_evaluate!!(m; varinfo=SimpleVarInfo{Float64}(OrderedDict()));
+       _, vi = DynamicPPL.new_evaluate!!(m; varinfo=SimpleVarInfo{Float64}(OrderedDict()), context=ctx);
 
 julia> # (✓) Sort of fast, but only possible at runtime.
        vi[@varname(x[1])]
@@ -91,28 +94,28 @@ demo_constrained (generic function with 2 methods)
 
 julia> m = demo_constrained();
 
-julia> _, vi = DynamicPPL.new_evaluate!!(m; varinfo=SimpleVarInfo());
+julia> _, vi = DynamicPPL.new_evaluate!!(m; varinfo=SimpleVarInfo(), context=ctx);
 
 julia> vi[@varname(x)] # (✓) 0 ≤ x < ∞
 1.8632965762164932
 
-julia> _, vi = DynamicPPL.new_evaluate!!(m; varinfo=DynamicPPL.settrans!!(SimpleVarInfo(), true));
+julia> _, vi = DynamicPPL.new_evaluate!!(m; varinfo=DynamicPPL.settrans!!(SimpleVarInfo(), true), context=ctx);
 
 julia> vi[@varname(x)] # (✓) -∞ < x < ∞
 -0.21080155351918753
 
-julia> xs = [last(DynamicPPL.new_evaluate!!(m; varinfo=DynamicPPL.settrans!!(SimpleVarInfo(), true)))[@varname(x)] for i = 1:10];
+julia> xs = [last(DynamicPPL.new_evaluate!!(m; varinfo=DynamicPPL.settrans!!(SimpleVarInfo(), true), context=ctx))[@varname(x)] for i = 1:10];
 
 julia> any(xs .< 0)  # (✓) Positive probability mass on negative numbers!
 true
 
 julia> # And with `OrderedDict` of course!
-       _, vi = DynamicPPL.new_evaluate!!(m; varinfo=DynamicPPL.settrans!!(SimpleVarInfo(OrderedDict()), true));
+       _, vi = DynamicPPL.new_evaluate!!(m; varinfo=DynamicPPL.settrans!!(SimpleVarInfo(OrderedDict()), true), context=ctx);
 
 julia> vi[@varname(x)] # (✓) -∞ < x < ∞
 0.6225185067787314
 
-julia> xs = [last(DynamicPPL.new_evaluate!!(m; varinfo=DynamicPPL.settrans!!(SimpleVarInfo(), true)))[@varname(x)] for i = 1:10];
+julia> xs = [last(DynamicPPL.new_evaluate!!(m; varinfo=DynamicPPL.settrans!!(SimpleVarInfo(), true), context=ctx))[@varname(x)] for i = 1:10];
 
 julia> any(xs .< 0) # (✓) Positive probability mass on negative numbers!
 true
@@ -125,7 +128,7 @@ julia> vi = DynamicPPL.settrans!!(SimpleVarInfo((x = -1.0,)), true)
 Transformed SimpleVarInfo((x = -1.0,), 0.0)
 
 julia> # (✓) Positive probability mass on negative numbers!
-       getlogp(last(DynamicPPL.new_evaluate!!(m; varinfo=vi)))
+       getlogp(last(DynamicPPL.new_evaluate!!(m; varinfo=vi, context=DynamicPPL.DefaultContext())))
 -1.3678794411714423
 
 julia> # While if we forget to indicate that it's transformed:
@@ -133,7 +136,7 @@ julia> # While if we forget to indicate that it's transformed:
 SimpleVarInfo((x = -1.0,), 0.0)
 
 julia> # (✓) No probability mass on negative numbers!
-       getlogp(last(DynamicPPL.new_evaluate!!(m; varinfo=vi)))
+       getlogp(last(DynamicPPL.new_evaluate!!(m; varinfo=vi, context=DynamicPPL.DefaultContext())))
 -Inf
 ```
 
@@ -233,7 +236,7 @@ SimpleVarInfo(model::Model, args...) = SimpleVarInfo{Float64}(model, args...)
 function SimpleVarInfo{T}(model::Model, args...) where {T<:Real}
     # TODO: fix this constructor
     length(args) > 0 && error("Broken for now")
-    return last(new_evaluate!!(model; varinfo=SimpleVarInfo{T}()))
+    return last(new_evaluate!!(model; varinfo=SimpleVarInfo{T}(), wrap=true))
 end
 
 # Constructor from `VarInfo`.

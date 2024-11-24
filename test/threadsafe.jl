@@ -47,7 +47,7 @@
         end
 
         vi = VarInfo()
-        wthreads(x)(vi)
+        wthreads(x)(; varinfo=vi)
         lp_w_threads = getlogp(vi)
         if Threads.nthreads() == 1
             @test vi_ isa VarInfo
@@ -57,7 +57,7 @@
 
         println("With `@threads`:")
         println("  default:")
-        @time wthreads(x)(vi)
+        @time wthreads(x)(; varinfo=vi)
 
         # Ensure that we use `ThreadSafeVarInfo` to handle multithreaded observe statements.
         DynamicPPL.evaluate_threadsafe!!(

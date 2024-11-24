@@ -313,7 +313,7 @@ function pointwise_logdensities(
         setval!(vi, chain, sample_idx, chain_idx)
 
         # Execute model
-        model(vi, point_context)
+        model(; varinfo=vi, context=point_context)
     end
 
     niters = size(chain, 1)
@@ -331,7 +331,7 @@ function pointwise_logdensities(
     point_context = PointwiseLogdensityContext(
         OrderedDict{VarName,Vector{Float64}}(), context
     )
-    model(varinfo, point_context)
+    model(; varinfo=varinfo, context=point_context)
     return point_context.logdensities
 end
 

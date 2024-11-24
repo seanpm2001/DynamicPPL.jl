@@ -10,7 +10,7 @@
             end
         end
 
-        test([1, 1, -1])(VarInfo(), SampleFromPrior(), LikelihoodContext())
+        test([1, 1, -1])(; varinfo=VarInfo(), sampler=SampleFromPrior(), context=LikelihoodContext())
     end
 
     # https://github.com/TuringLang/DynamicPPL.jl/issues/28#issuecomment-829223577

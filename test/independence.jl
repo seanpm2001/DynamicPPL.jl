@@ -7,5 +7,5 @@
         end
     end
     model = coinflip([1, 1, 0])
-    model(SampleFromPrior(), LikelihoodContext())
+    model(; sampler=SampleFromPrior(), context=LikelihoodContext())
 end

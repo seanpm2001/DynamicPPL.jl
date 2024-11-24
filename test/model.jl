@@ -132,12 +132,12 @@ is_typed_varinfo(varinfo::DynamicPPL.SimpleVarInfo{<:NamedTuple}) = true
             for i in 1:10
                 Random.seed!(100 + i)
                 vi = VarInfo()
-                model(Random.default_rng(), vi, sampler)
+                model(; rng=Random.default_rng(), varinfo=vi, sampler=sampler)
                 vals = DynamicPPL.getall(vi)
 
                 Random.seed!(100 + i)
                 vi = VarInfo()
-                model(Random.default_rng(), vi, sampler)
+                model(; rng=Random.default_rng(), varinfo=vi, sampler=sampler)
                 @test DynamicPPL.getall(vi) == vals
             end
         end
@@ -150,7 +150,7 @@ is_typed_varinfo(varinfo::DynamicPPL.SimpleVarInfo{<:NamedTuple}) = true
         s, m = model()
 
         Random.seed!(100)
-        @test model(Random.default_rng()) == (s, m)
+        @test model(; rng=Random.default_rng()) == (s, m)
     end
 
     @testset "nameof" begin
@@ -191,7 +191,7 @@ is_typed_varinfo(varinfo::DynamicPPL.SimpleVarInfo{<:NamedTuple}) = true
 
         # Second component of return-value of `new_evaluate!!` should
         # be a `DynamicPPL.AbstractVarInfo`.
-        evaluate_retval = DynamicPPL.new_evaluate!!(model; varinfo=vi)
+        evaluate_retval = DynamicPPL.new_evaluate!!(model; varinfo=vi, wrap=true)
         @test evaluate_retval[2] isa DynamicPPL.AbstractVarInfo
 
         # Should not return `AbstractVarInfo` when we call the model.
@@ -211,7 +211,7 @@ is_typed_varinfo(varinfo::DynamicPPL.SimpleVarInfo{<:NamedTuple}) = true
             vi[spl] = r_raw
             @test vi[@varname(m)] == r_raw[1]
             @test vi[@varname(x)] != r_raw[2]
-            model(vi)
+            model(; varinfo=vi)
         end
     end
 
@@ -434,7 +434,7 @@ is_typed_varinfo(varinfo::DynamicPPL.SimpleVarInfo{<:NamedTuple}) = true
         @testset "$(short_varinfo_name(varinfo))" for varinfo in varinfos
             varinfo_linked = DynamicPPL.link(varinfo, model)
             varinfo_linked_result = last(
-                DynamicPPL.new_evaluate!!(model; varinfo=deepcopy(varinfo_linked))
+                DynamicPPL.new_evaluate!!(model; varinfo=deepcopy(varinfo_linked), context=DefaultContext())
             )
             @test getlogp(varinfo_linked) ≈ getlogp(varinfo_linked_result)
         end

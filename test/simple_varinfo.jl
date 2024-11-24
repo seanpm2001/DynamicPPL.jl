@@ -97,7 +97,7 @@
             for vn in DynamicPPL.TestUtils.varnames(model)
                 vi = DynamicPPL.setindex!!(vi, get(values_constrained, vn), vn)
             end
-            vi = last(DynamicPPL.new_evaluate!!(model; varinfo=vi))
+            vi = last(DynamicPPL.new_evaluate!!(model; varinfo=vi, context=DefaultContext()))
             lp_orig = getlogp(vi)
 
             # `link!!`
@@ -243,7 +243,7 @@
                 for vn in keys(svi)
                     svi = DynamicPPL.setindex!!(svi, 10 * randn(), vn)
                 end
-                retval, svi = DynamicPPL.new_evaluate!!(model; varinfo=svi)
+                retval, svi = DynamicPPL.new_evaluate!!(model; varinfo=svi, wrap=true)
                 @test retval.m == svi[@varname(m)]  # `m` is unconstrained
                 @test retval.x ≠ svi[@varname(x)]   # `x` is constrained depending on `m`
 
@@ -290,7 +290,7 @@
             end
 
             retval, vi_linked_result = DynamicPPL.new_evaluate!!(
-                model; varinfo=deepcopy(vi_linked)
+                model; varinfo=deepcopy(vi_linked), context=DefaultContext()
             )
 
             @test DynamicPPL.tovec(DynamicPPL.getindex_internal(vi_linked, @varname(s))) ≠

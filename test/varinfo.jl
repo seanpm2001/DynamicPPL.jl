@@ -29,7 +29,7 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
         model = gdemo(1.0, 2.0)
 
         vi = VarInfo(DynamicPPL.Metadata())
-        model(vi, SampleFromUniform())
+        model(; varinfo=vi, sampler=SampleFromUniform())
         tvi = TypedVarInfo(vi)
 
         meta = vi.metadata
@@ -225,8 +225,8 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
             vi_vnv_typed = VarInfo(
                 model, SampleFromPrior(), DefaultContext(), DynamicPPL.VarNamedVector()
             )
-            model(vi_untyped, SampleFromPrior())
-            model(vi_vnv, SampleFromPrior())
+            model(; varinfo=vi_untyped, sampler=SampleFromPrior())
+            model(; varinfo=vi_vnv, sampler=SampleFromPrior())
 
             model_name = model == model_uv ? "univariate" : "multivariate"
             @testset "$(model_name), $(short_varinfo_name(vi))" for vi in [
@@ -288,7 +288,7 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
 
                 vicopy = deepcopy(vi)
                 DynamicPPL.setval_and_resample!(vicopy, (m=zeros(5),))
-                model(vicopy)
+                model(; varinfo=vicopy)
                 # Setting `m` fails for univariate due to limitations of `subsumes(::String, ::String)`
                 if model == model_uv
                     @test_broken vicopy[m_vns] == zeros(5)
@@ -301,7 +301,7 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
                 DynamicPPL.setval_and_resample!(
                     vicopy, (; (Symbol("m[$i]") => i for i in (1, 3, 5, 4, 2))...)
                 )
-                model(vicopy)
+                model(; varinfo=vicopy)
                 if model == model_uv
                     @test vicopy[m_vns] == 1:5
                 else
@@ -313,12 +313,12 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
                 DynamicPPL.setval_and_resample!(
                     vicopy, (; (Symbol("m[$i]") => i for i in (1, 2, 3, 4, 5))...)
                 )
-                model(vicopy)
+                model(; varinfo=vicopy)
                 @test vicopy[m_vns] == 1:5
                 @test vicopy[s_vns] != vi[s_vns]
 
                 DynamicPPL.setval_and_resample!(vicopy, (s=42,))
-                model(vicopy)
+                model(; varinfo=vicopy)
                 @test vicopy[m_vns] != 1:5
                 @test vicopy[s_vns] == 42
             end
