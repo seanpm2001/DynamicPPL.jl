@@ -110,7 +110,7 @@ function AbstractMCMC.step(
         # This is a quick fix for https://github.com/TuringLang/Turing.jl/issues/1588
         # and https://github.com/TuringLang/Turing.jl/issues/1563
         # to avoid that existing variables are resampled
-        vi = last(evaluate!!(model, vi, DefaultContext()))
+        vi = last(new_evaluate!!(model; varinfo=vi))
     end
 
     return initialstep(rng, model, spl, vi; initial_params, kwargs...)

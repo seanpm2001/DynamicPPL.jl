@@ -176,7 +176,7 @@ function untyped_varinfo(
     metadata::Union{Metadata,VarNamedVector}=Metadata(),
 )
     varinfo = VarInfo(metadata)
-    return last(evaluate!!(model, varinfo, SamplingContext(rng, sampler, context)))
+    return last(new_evaluate!!(model, rng=rng, varinfo=varinfo, sampler=sampler, context=context))
 end
 function untyped_varinfo(
     model::Model, args::Union{AbstractSampler,AbstractContext,Metadata,VarNamedVector}...

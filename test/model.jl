@@ -189,9 +189,9 @@ is_typed_varinfo(varinfo::DynamicPPL.SimpleVarInfo{<:NamedTuple}) = true
         # sample from model and extract variables
         vi = VarInfo(model)
 
-        # Second component of return-value of `evaluate!!` should
+        # Second component of return-value of `new_evaluate!!` should
         # be a `DynamicPPL.AbstractVarInfo`.
-        evaluate_retval = DynamicPPL.evaluate!!(model, vi, DefaultContext())
+        evaluate_retval = DynamicPPL.new_evaluate!!(model; varinfo=vi)
         @test evaluate_retval[2] isa DynamicPPL.AbstractVarInfo
 
         # Should not return `AbstractVarInfo` when we call the model.
@@ -299,8 +299,8 @@ is_typed_varinfo(varinfo::DynamicPPL.SimpleVarInfo{<:NamedTuple}) = true
                 DynamicPPL.TestUtils.logjoint_true_with_logabsdet_jacobian(model, x...)
             # Ensure `varnames` is implemented.
             vi = last(
-                DynamicPPL.evaluate!!(
-                    model, SimpleVarInfo(OrderedDict()), SamplingContext()
+                DynamicPPL.new_evaluate!!(
+                    model; varinfo=SimpleVarInfo(OrderedDict()), context=SamplingContext()
                 ),
             )
             @test all(collect(keys(vi)) .== DynamicPPL.TestUtils.varnames(model))
@@ -373,13 +373,13 @@ is_typed_varinfo(varinfo::DynamicPPL.SimpleVarInfo{<:NamedTuple}) = true
                 )
                 @testset "$(short_varinfo_name(varinfo))" for varinfo in varinfos
                     @test begin
-                        @inferred(DynamicPPL.evaluate!!(model, varinfo, context))
+                        @inferred(DynamicPPL.new_evaluate!!(model; varinfo=varinfo, context=context))
                         true
                     end
 
                     varinfo_linked = DynamicPPL.link(varinfo, model)
                     @test begin
-                        @inferred(DynamicPPL.evaluate!!(model, varinfo_linked, context))
+                        @inferred(DynamicPPL.new_evaluate!!(model; varinfo=varinfo_linked, context=context))
                         true
                     end
                 end
@@ -434,7 +434,7 @@ is_typed_varinfo(varinfo::DynamicPPL.SimpleVarInfo{<:NamedTuple}) = true
         @testset "$(short_varinfo_name(varinfo))" for varinfo in varinfos
             varinfo_linked = DynamicPPL.link(varinfo, model)
             varinfo_linked_result = last(
-                DynamicPPL.evaluate!!(model, deepcopy(varinfo_linked), DefaultContext())
+                DynamicPPL.new_evaluate!!(model; varinfo=deepcopy(varinfo_linked))
             )
             @test getlogp(varinfo_linked) ≈ getlogp(varinfo_linked_result)
         end

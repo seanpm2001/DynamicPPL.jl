@@ -351,10 +351,10 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
         # present in the `varinfo`.
         ## `UntypedVarInfo`
         vi = VarInfo()
-        vi = last(DynamicPPL.evaluate!!(model, vi, SamplingContext()))
+        vi = last(DynamicPPL.new_evaluate!!(model; varinfo=vi, context=SamplingContext()))
         vi = DynamicPPL.settrans!!(vi, true, vn)
         # Sample in unconstrained space.
-        vi = last(DynamicPPL.evaluate!!(model, vi, SamplingContext()))
+        vi = last(DynamicPPL.new_evaluate!!(model; varinfo=vi, context=SamplingContext()))
         f = DynamicPPL.from_linked_internal_transform(vi, vn, dist)
         x = f(DynamicPPL.getindex_internal(vi, vn))
         @test getlogp(vi) ≈ Bijectors.logpdf_with_trans(dist, x, true)
@@ -363,7 +363,7 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
         vi = VarInfo(model)
         vi = DynamicPPL.settrans!!(vi, true, vn)
         # Sample in unconstrained space.
-        vi = last(DynamicPPL.evaluate!!(model, vi, SamplingContext()))
+        vi = last(DynamicPPL.new_evaluate!!(model; varinfo=vi, context=SamplingContext()))
         f = DynamicPPL.from_linked_internal_transform(vi, vn, dist)
         x = f(DynamicPPL.getindex_internal(vi, vn))
         @test getlogp(vi) ≈ Bijectors.logpdf_with_trans(dist, x, true)
@@ -372,7 +372,7 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
         ## `SimpleVarInfo{<:NamedTuple}`
         vi = DynamicPPL.settrans!!(SimpleVarInfo(), true)
         # Sample in unconstrained space.
-        vi = last(DynamicPPL.evaluate!!(model, vi, SamplingContext()))
+        vi = last(DynamicPPL.new_evaluate!!(model; varinfo=vi, context=SamplingContext()))
         f = DynamicPPL.from_linked_internal_transform(vi, vn, dist)
         x = f(DynamicPPL.getindex_internal(vi, vn))
         @test getlogp(vi) ≈ Bijectors.logpdf_with_trans(dist, x, true)
@@ -380,7 +380,7 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
         ## `SimpleVarInfo{<:Dict}`
         vi = DynamicPPL.settrans!!(SimpleVarInfo(Dict()), true)
         # Sample in unconstrained space.
-        vi = last(DynamicPPL.evaluate!!(model, vi, SamplingContext()))
+        vi = last(DynamicPPL.new_evaluate!!(model; varinfo=vi, context=SamplingContext()))
         f = DynamicPPL.from_linked_internal_transform(vi, vn, dist)
         x = f(DynamicPPL.getindex_internal(vi, vn))
         @test getlogp(vi) ≈ Bijectors.logpdf_with_trans(dist, x, true)
@@ -388,7 +388,7 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
         ## `SimpleVarInfo{<:VarNamedVector}`
         vi = DynamicPPL.settrans!!(SimpleVarInfo(DynamicPPL.VarNamedVector()), true)
         # Sample in unconstrained space.
-        vi = last(DynamicPPL.evaluate!!(model, vi, SamplingContext()))
+        vi = last(DynamicPPL.new_evaluate!!(model; varinfo=vi, context=SamplingContext()))
         f = DynamicPPL.from_linked_internal_transform(vi, vn, dist)
         x = f(DynamicPPL.getindex_internal(vi, vn))
         @test getlogp(vi) ≈ Bijectors.logpdf_with_trans(dist, x, true)
@@ -470,7 +470,7 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
                     end
 
                     # Evaluate the model once to update the logp of the varinfo.
-                    varinfo = last(DynamicPPL.evaluate!!(model, varinfo, DefaultContext()))
+                    varinfo = last(DynamicPPL.new_evaluate!!(model; varinfo=varinfo, context=DefaultContext()))
 
                     varinfo_linked = if mutating
                         DynamicPPL.link!!(deepcopy(varinfo), model)

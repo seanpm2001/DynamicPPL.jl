@@ -39,8 +39,8 @@ function setup_varinfos(
     # VarInfo
     vi_untyped_metadata = VarInfo(DynamicPPL.Metadata())
     vi_untyped_vnv = VarInfo(DynamicPPL.VarNamedVector())
-    model(vi_untyped_metadata)
-    model(vi_untyped_vnv)
+    model(; varinfo=vi_untyped_metadata)
+    model(; varinfo=vi_untyped_vnv)
     vi_typed_metadata = DynamicPPL.TypedVarInfo(vi_untyped_metadata)
     vi_typed_vnv = DynamicPPL.TypedVarInfo(vi_untyped_vnv)
 
@@ -167,7 +167,7 @@ a default implementation using [`SimpleVarInfo{<:Dict}`](@ref) is provided.
 """
 function varnames(model::Model)
     return collect(
-        keys(last(DynamicPPL.evaluate!!(model, SimpleVarInfo(Dict()), SamplingContext())))
+        keys(last(DynamicPPL.new_evaluate!!(model, varinfo=SimpleVarInfo(Dict()), context=SamplingContext())))
     )
 end
 
@@ -803,7 +803,7 @@ function posterior_optima(model::MultivariateAssumeDemoModels)
 end
 function rand_prior_true(rng::Random.AbstractRNG, model::MultivariateAssumeDemoModels)
     # Get template values from `model`.
-    retval = model(rng)
+    retval = model(; rng=rng)
     vals = (s=retval.s, m=retval.m)
     # Fill containers with realizations from prior.
     for i in LinearIndices(vals.s)

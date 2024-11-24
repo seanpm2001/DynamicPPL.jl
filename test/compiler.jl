@@ -564,13 +564,13 @@ module Issue537 end
         # an attempt at a `NamedTuple` of the form `(x = 1, __varinfo__)`.
         @model empty_model() = return x = 1
         empty_vi = VarInfo()
-        retval_and_vi = DynamicPPL.evaluate!!(empty_model(), empty_vi, SamplingContext())
+        retval_and_vi = DynamicPPL.new_evaluate!!(empty_model(); varinfo=empty_vi, context=SamplingContext())
         @test retval_and_vi isa Tuple{Int,typeof(empty_vi)}
 
         # Even if the return-value is `AbstractVarInfo`, we should return
         # a `Tuple` with `AbstractVarInfo` in the second component too.
         @model demo() = return __varinfo__
-        retval, svi = DynamicPPL.evaluate!!(demo(), SimpleVarInfo(), SamplingContext())
+        retval, svi = DynamicPPL.new_evaluate!!(demo(); varinfo=SimpleVarInfo(), context=SamplingContext())
         @test svi == SimpleVarInfo()
         if Threads.nthreads() > 1
             @test retval isa DynamicPPL.ThreadSafeVarInfo{<:SimpleVarInfo}
@@ -586,11 +586,11 @@ module Issue537 end
             f(x) = return x^2
             return f(1.0)
         end
-        retval, svi = DynamicPPL.evaluate!!(demo(), SimpleVarInfo(), SamplingContext())
+        retval, svi = DynamicPPL.new_evaluate!!(demo(); varinfo=SimpleVarInfo(), context=SamplingContext())
         @test retval isa Float64
 
         @model demo() = x ~ Normal()
-        retval, svi = DynamicPPL.evaluate!!(demo(), SimpleVarInfo(), SamplingContext())
+        retval, svi = DynamicPPL.new_evaluate!!(demo(); varinfo=SimpleVarInfo(), context=SamplingContext())
 
         # Return-value when using `@submodel`
         @model inner() = x ~ Normal()

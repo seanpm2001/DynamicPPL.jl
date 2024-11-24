@@ -193,7 +193,7 @@ function values_as_in_model(
     context::AbstractContext=DefaultContext(),
 )
     context = ValuesAsInModelContext(context)
-    evaluate!!(model, varinfo, context)
+    new_evaluate!!(model; varinfo=varinfo, context=context)
     return context.values
 end
 function values_as_in_model(

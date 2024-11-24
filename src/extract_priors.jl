@@ -114,7 +114,7 @@ extract_priors(args::Union{Model,AbstractVarInfo}...) =
     extract_priors(Random.default_rng(), args...)
 function extract_priors(rng::Random.AbstractRNG, model::Model)
     context = PriorExtractorContext(SamplingContext(rng))
-    evaluate!!(model, VarInfo(), context)
+    new_evaluate!!(model, context=context)
     return context.priors
 end
 
@@ -128,6 +128,6 @@ and recording the distributions that are present at each tilde statement.
 """
 function extract_priors(model::Model, varinfo::AbstractVarInfo)
     context = PriorExtractorContext(DefaultContext())
-    evaluate!!(model, deepcopy(varinfo), context)
+    new_evaluate!!(model, varinfo=deepcopy(varinfo), context=context)
     return context.priors
 end

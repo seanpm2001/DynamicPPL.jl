@@ -97,7 +97,7 @@
             for vn in DynamicPPL.TestUtils.varnames(model)
                 vi = DynamicPPL.setindex!!(vi, get(values_constrained, vn), vn)
             end
-            vi = last(DynamicPPL.evaluate!!(model, vi, DefaultContext()))
+            vi = last(DynamicPPL.new_evaluate!!(model; varinfo=vi))
             lp_orig = getlogp(vi)
 
             # `link!!`
@@ -165,7 +165,7 @@
 
             ### Sampling ###
             # Sample a new varinfo!
-            _, svi_new = DynamicPPL.evaluate!!(model, svi, SamplingContext())
+            _, svi_new = DynamicPPL.new_evaluate!!(model; varinfo=svi, context=SamplingContext())
 
             # Realization for `m` should be different wp. 1.
             for vn in DynamicPPL.TestUtils.varnames(model)
@@ -233,9 +233,9 @@
 
         # Initialize.
         svi_nt = DynamicPPL.settrans!!(SimpleVarInfo(), true)
-        svi_nt = last(DynamicPPL.evaluate!!(model, svi_nt, SamplingContext()))
+        svi_nt = last(DynamicPPL.new_evaluate!!(model; varinfo=svi_nt, context=SamplingContext()))
         svi_vnv = DynamicPPL.settrans!!(SimpleVarInfo(DynamicPPL.VarNamedVector()), true)
-        svi_vnv = last(DynamicPPL.evaluate!!(model, svi_vnv, SamplingContext()))
+        svi_vnv = last(DynamicPPL.new_evaluate!!(model; varinfo=svi_vnv, context=SamplingContext()))
 
         for svi in (svi_nt, svi_vnv)
             # Sample with large variations in unconstrained space.
@@ -243,7 +243,7 @@
                 for vn in keys(svi)
                     svi = DynamicPPL.setindex!!(svi, 10 * randn(), vn)
                 end
-                retval, svi = DynamicPPL.evaluate!!(model, svi, DefaultContext())
+                retval, svi = DynamicPPL.new_evaluate!!(model; varinfo=svi)
                 @test retval.m == svi[@varname(m)]  # `m` is unconstrained
                 @test retval.x ≠ svi[@varname(x)]   # `x` is constrained depending on `m`
 
@@ -281,7 +281,7 @@
             )
 
             # Resulting varinfo should no longer be transformed.
-            vi_result = last(DynamicPPL.evaluate!!(model, deepcopy(vi), SamplingContext()))
+            vi_result = last(DynamicPPL.new_evaluate!!(model; varinfo=deepcopy(vi), context=SamplingContext()))
             @test !DynamicPPL.istrans(vi_result)
 
             # Set the values to something that is out of domain if we're in constrained space.
@@ -289,8 +289,8 @@
                 vi_linked = DynamicPPL.setindex!!(vi_linked, -rand(), vn)
             end
 
-            retval, vi_linked_result = DynamicPPL.evaluate!!(
-                model, deepcopy(vi_linked), DefaultContext()
+            retval, vi_linked_result = DynamicPPL.new_evaluate!!(
+                model; varinfo=deepcopy(vi_linked)
             )
 
             @test DynamicPPL.tovec(DynamicPPL.getindex_internal(vi_linked, @varname(s))) ≠

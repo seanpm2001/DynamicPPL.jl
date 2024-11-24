@@ -137,7 +137,7 @@ getparams(f::LogDensityFunction) = f.varinfo[_get_indexer(getcontext(f))]
 function LogDensityProblems.logdensity(f::LogDensityFunction, θ::AbstractVector)
     context = getcontext(f)
     vi_new = unflatten(f.varinfo, context, θ)
-    return getlogp(last(evaluate!!(f.model, vi_new, context)))
+    return getlogp(last(new_evaluate!!(f.model; varinfo=vi_new, context=context)))
 end
 function LogDensityProblems.capabilities(::Type{<:LogDensityFunction})
     return LogDensityProblems.LogDensityOrder{0}()

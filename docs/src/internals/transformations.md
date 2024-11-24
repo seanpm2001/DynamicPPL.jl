@@ -294,7 +294,7 @@ logjoint(model, varinfo_linked)
 But we don't! In fact, if we look at the actual value used within the model
 
 ```@example transformations-internal
-first(DynamicPPL.evaluate!!(model, varinfo_linked, DefaultContext()))
+first(DynamicPPL.new_evaluate!!(model; varinfo=varinfo_linked))
 ```
 
 we see that we indeed satisfy the constraint `m < x`, as desired.

@@ -114,14 +114,14 @@ end
 function link!!(
     t::DynamicTransformation, vi::ThreadSafeVarInfo, spl::AbstractSampler, model::Model
 )
-    return settrans!!(last(evaluate!!(model, vi, DynamicTransformationContext{false}())), t)
+    return settrans!!(last(new_evaluate!!(model; varinfo=vi, context=DynamicTransformationContext{false}())), t)
 end
 
 function invlink!!(
     ::DynamicTransformation, vi::ThreadSafeVarInfo, spl::AbstractSampler, model::Model
 )
     return settrans!!(
-        last(evaluate!!(model, vi, DynamicTransformationContext{true}())),
+        last(new_evaluate!!(model; varinfo=vi, context=DynamicTransformationContext{true}())),
         NoTransformation(),
     )
 end
