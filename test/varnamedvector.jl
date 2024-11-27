@@ -578,21 +578,21 @@ end
 end
 
 @testset "VarInfo + VarNamedVector" begin
-    models = DynamicPPL.TestUtils.DEMO_MODELS
+    models = DynamicPPL.DemoModels.DEMO_MODELS
     @testset "$(model.f)" for model in models
         # NOTE: Need to set random seed explicitly to avoid using the same seed
         # for initialization as for sampling in the inner testset below.
         Random.seed!(42)
-        value_true = DynamicPPL.TestUtils.rand_prior_true(model)
-        vns = DynamicPPL.TestUtils.varnames(model)
-        varnames = DynamicPPL.TestUtils.varnames(model)
+        value_true = DynamicPPL.DemoModels.rand_prior_true(model)
+        vns = DynamicPPL.DemoModels.varnames(model)
+        varnames = DynamicPPL.DemoModels.varnames(model)
         varinfos = DynamicPPL.TestUtils.setup_varinfos(
             model, value_true, varnames; include_threadsafe=false
         )
         # Filter out those which are not based on `VarNamedVector`.
         varinfos = filter(DynamicPPL.has_varnamedvector, varinfos)
         # Get the true log joint.
-        logp_true = DynamicPPL.TestUtils.logjoint_true(model, value_true...)
+        logp_true = DynamicPPL.DemoModels.logjoint_true(model, value_true...)
 
         @testset "$(short_varinfo_name(varinfo))" for varinfo in varinfos
             # Need to make sure we're using a different random seed from the

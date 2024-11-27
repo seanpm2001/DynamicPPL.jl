@@ -1,8 +1,8 @@
 @testset "AD: ForwardDiff and ReverseDiff" begin
-    @testset "$(m.f)" for m in DynamicPPL.TestUtils.DEMO_MODELS
+    @testset "$(m.f)" for m in DynamicPPL.DemoModels.DEMO_MODELS
         f = DynamicPPL.LogDensityFunction(m)
-        rand_param_values = DynamicPPL.TestUtils.rand_prior_true(m)
-        vns = DynamicPPL.TestUtils.varnames(m)
+        rand_param_values = DynamicPPL.DemoModels.rand_prior_true(m)
+        vns = DynamicPPL.DemoModels.varnames(m)
         varinfos = DynamicPPL.TestUtils.setup_varinfos(m, rand_param_values, vns)
 
         @testset "$(short_varinfo_name(varinfo))" for varinfo in varinfos

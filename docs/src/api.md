@@ -157,41 +157,46 @@ values_as_in_model
 NamedDist
 ```
 
+## Demo Models
+
+DynamicPPL exports a list of demo models which cover different features of the package.
+
+```@docs
+DynamicPPL.DemoModels.DEMO_MODELS
+```
+
+For every demo model, one can define the true log prior, log likelihood, and log joint probabilities.
+
+```@docs
+DynamicPPL.DemoModels.logprior_true
+DynamicPPL.DemoModels.loglikelihood_true
+DynamicPPL.DemoModels.logjoint_true
+```
+
+And in the case where the model includes constrained variables, it can also be useful to define
+
+```@docs
+DynamicPPL.DemoModels.logprior_true_with_logabsdet_jacobian
+DynamicPPL.DemoModels.logjoint_true_with_logabsdet_jacobian
+```
+
+Finally, the following methods can also be of use:
+
+```
+DynamicPPL.DemoModels.varnames
+DynamicPPL.DemoModels.posterior_mean
+DynamicPPL.DemoModels.rand_prior_true
+```
+
 ## Testing Utilities
 
-DynamicPPL provides several demo models and helpers for testing samplers in the `DynamicPPL.TestUtils` submodule.
+DynamicPPL provides several helpers for testing samplers in the `DynamicPPL.TestUtils` submodule.
 
 ```@docs
 DynamicPPL.TestUtils.test_sampler
 DynamicPPL.TestUtils.test_sampler_on_demo_models
 DynamicPPL.TestUtils.test_sampler_continuous
 DynamicPPL.TestUtils.marginal_mean_of_samples
-```
-
-```@docs
-DynamicPPL.TestUtils.DEMO_MODELS
-```
-
-For every demo model, one can define the true log prior, log likelihood, and log joint probabilities.
-
-```@docs
-DynamicPPL.TestUtils.logprior_true
-DynamicPPL.TestUtils.loglikelihood_true
-DynamicPPL.TestUtils.logjoint_true
-```
-
-And in the case where the model includes constrained variables, it can also be useful to define
-
-```@docs
-DynamicPPL.TestUtils.logprior_true_with_logabsdet_jacobian
-DynamicPPL.TestUtils.logjoint_true_with_logabsdet_jacobian
-```
-
-Finally, the following methods can also be of use:
-
-```@docs
-DynamicPPL.TestUtils.varnames
-DynamicPPL.TestUtils.posterior_mean
 DynamicPPL.TestUtils.setup_varinfos
 DynamicPPL.TestUtils.update_values!!
 DynamicPPL.TestUtils.test_values

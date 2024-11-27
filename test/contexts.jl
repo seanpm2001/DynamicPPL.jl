@@ -258,7 +258,7 @@ end
     end
 
     @testset "FixedContext" begin
-        @testset "$(model.f)" for model in DynamicPPL.TestUtils.DEMO_MODELS
+        @testset "$(model.f)" for model in DynamicPPL.DemoModels.DEMO_MODELS
             retval = model()
             s, m = retval.s, retval.m
 

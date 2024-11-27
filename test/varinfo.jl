@@ -395,9 +395,9 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
     end
 
     @testset "values_as" begin
-        @testset "$(nameof(model))" for model in DynamicPPL.TestUtils.DEMO_MODELS
-            example_values = DynamicPPL.TestUtils.rand_prior_true(model)
-            vns = DynamicPPL.TestUtils.varnames(model)
+        @testset "$(nameof(model))" for model in DynamicPPL.DemoModels.DEMO_MODELS
+            example_values = DynamicPPL.DemoModels.rand_prior_true(model)
+            vns = DynamicPPL.DemoModels.varnames(model)
 
             # Set up the different instances of `AbstractVarInfo` with the desired values.
             varinfos = DynamicPPL.TestUtils.setup_varinfos(
@@ -439,12 +439,12 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
 
     @testset "unflatten + linking" begin
         @testset "Model: $(model.f)" for model in [
-            DynamicPPL.TestUtils.demo_one_variable_multiple_constraints(),
-            DynamicPPL.TestUtils.demo_lkjchol(),
+            DynamicPPL.DemoModels.demo_one_variable_multiple_constraints(),
+            DynamicPPL.DemoModels.demo_lkjchol(),
         ]
             @testset "mutating=$mutating" for mutating in [false, true]
-                value_true = DynamicPPL.TestUtils.rand_prior_true(model)
-                varnames = DynamicPPL.TestUtils.varnames(model)
+                value_true = DynamicPPL.DemoModels.rand_prior_true(model)
+                varnames = DynamicPPL.DemoModels.varnames(model)
                 varinfos = DynamicPPL.TestUtils.setup_varinfos(
                     model, value_true, varnames; include_threadsafe=true
                 )
@@ -486,8 +486,8 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
                     )
                     @test length(varinfo_linked_unflattened[:]) == length(varinfo_linked[:])
 
-                    lp_true = DynamicPPL.TestUtils.logjoint_true(model, value_true...)
-                    value_linked_true, lp_linked_true = DynamicPPL.TestUtils.logjoint_true_with_logabsdet_jacobian(
+                    lp_true = DynamicPPL.DemoModels.logjoint_true(model, value_true...)
+                    value_linked_true, lp_linked_true = DynamicPPL.DemoModels.logjoint_true_with_logabsdet_jacobian(
                         model, value_true...
                     )
 
@@ -632,11 +632,11 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
     end
 
     @testset "merge" begin
-        @testset "$(model.f)" for model in DynamicPPL.TestUtils.DEMO_MODELS
-            vns = DynamicPPL.TestUtils.varnames(model)
+        @testset "$(model.f)" for model in DynamicPPL.DemoModels.DEMO_MODELS
+            vns = DynamicPPL.DemoModels.varnames(model)
             varinfos = DynamicPPL.TestUtils.setup_varinfos(
                 model,
-                DynamicPPL.TestUtils.rand_prior_true(model),
+                DynamicPPL.DemoModels.rand_prior_true(model),
                 vns;
                 include_threadsafe=true,
             )
@@ -678,7 +678,7 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
                 end
 
                 @testset "with different value" begin
-                    x = DynamicPPL.TestUtils.rand_prior_true(model)
+                    x = DynamicPPL.DemoModels.rand_prior_true(model)
                     varinfo_changed = DynamicPPL.TestUtils.update_values!!(
                         deepcopy(varinfo), x, vns
                     )
@@ -729,7 +729,7 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
     end
 
     @testset "VarInfo with selectors" begin
-        @testset "$(model.f)" for model in DynamicPPL.TestUtils.DEMO_MODELS
+        @testset "$(model.f)" for model in DynamicPPL.DemoModels.DEMO_MODELS
             varinfo = VarInfo(
                 model,
                 DynamicPPL.SampleFromPrior(),
@@ -739,7 +739,7 @@ DynamicPPL.getspace(::DynamicPPL.Sampler{MySAlg}) = (:s,)
             selector = DynamicPPL.Selector()
             spl = Sampler(MySAlg(), model, selector)
 
-            vns = DynamicPPL.TestUtils.varnames(model)
+            vns = DynamicPPL.DemoModels.varnames(model)
             vns_s = filter(vn -> DynamicPPL.getsym(vn) === :s, vns)
             vns_m = filter(vn -> DynamicPPL.getsym(vn) === :m, vns)
             for vn in vns_s
